@@ -6,3 +6,7 @@ node_modules/
 
 # copilot
 .github/prompts/
+
+
+# env
+.env
