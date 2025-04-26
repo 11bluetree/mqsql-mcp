@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { MySQLDatabase } from "../database/mysql";
+import type { MySQLDatabase } from "../database/mysql";
+import { type MCPError, createValidationError, logError } from "../utils/error";
 import { validateSelectQuery } from "../utils/validation";
-import { MCPError, createValidationError, logError } from "../utils/error";
 
 // SELECTツールの入力パラメータスキーマ
 export const SelectInputSchema = z.object({

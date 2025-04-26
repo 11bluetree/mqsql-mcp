@@ -1,7 +1,7 @@
 import mysql from "mysql2/promise";
-import { DatabaseConfig } from "../utils/config";
+import type { DatabaseConfig } from "../utils/config";
 import {
-  MCPError,
+  type MCPError,
   createDatabaseConnectionError,
   createQueryExecutionError
 } from "../utils/error.js";
@@ -17,7 +17,7 @@ export class MySQLDatabase {
   /**
    * データベースに接続する
    */
-  async connect(): Promise<void | MCPError> {
+  async connect(): Promise<undefined | MCPError> {
     try {
       this.connection = await mysql.createConnection({
         host: this.config.host,
@@ -27,7 +27,7 @@ export class MySQLDatabase {
         database: this.config.database
       });
 
-      console.log(
+      console.info(
         `Connected to MySQL database: ${this.config.database} at ${this.config.host}:${this.config.port}`
       );
     } catch (error) {
@@ -45,14 +45,16 @@ export class MySQLDatabase {
     if (this.connection) {
       await this.connection.end();
       this.connection = null;
-      console.log("Disconnected from MySQL database");
+      console.info("Disconnected from MySQL database");
     }
   }
 
   /**
    * クエリを実行し結果を返す
    */
-  async executeQuery(query: string): Promise<any[] | MCPError> {
+  async executeQuery(
+    query: string
+  ): Promise<mysql.QueryResult | mysql.QueryResult[] | MCPError> {
     if (!this.connection) {
       return createDatabaseConnectionError(
         "Database connection is not established"

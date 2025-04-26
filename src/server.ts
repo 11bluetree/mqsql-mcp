@@ -2,17 +2,12 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio";
 import { z } from "zod";
 import { MySQLDatabase } from "./database/mysql";
+import { type SelectInput, selectTool } from "./tools/select.js";
 import {
-  DatabaseConfig,
+  type DatabaseConfig,
   getDatabaseConfig,
   validateDatabaseConfig
 } from "./utils/config.js";
-import {
-  SelectInputSchema,
-  SelectOutputSchema,
-  selectTool,
-  SelectInput
-} from "./tools/select.js";
 
 export class MySQLMCPServer {
   private db: MySQLDatabase;
@@ -68,7 +63,7 @@ export class MySQLMCPServer {
       // サーバーをトランスポートに接続
       await server.connect(transport);
 
-      console.log(
+      console.info(
         'MySQL MCP server is running. Use the "select" tool to execute SQL queries.'
       );
 
@@ -86,7 +81,7 @@ export class MySQLMCPServer {
    * サーバーをシャットダウン
    */
   async shutdown(): Promise<void> {
-    console.log("Shutting down MySQL MCP server...");
+    console.info("Shutting down MySQL MCP server...");
     await this.db.disconnect();
     process.exit(0);
   }

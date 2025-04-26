@@ -2,7 +2,7 @@
 import { MySQLMCPServer } from "./server.js";
 
 // バナーを表示
-console.log(`
+console.info(`
 ┌────────────────────────────────────────┐
 │          MySQL MCP Server              │
 │                                        │
