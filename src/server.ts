@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { MySQLDatabase } from "./database/mysql.js";
+import { type SchemaInput, schemaTool } from "./tools/schema.js";
 import { type SelectInput, selectTool } from "./tools/select.js";
 import {
   type DatabaseConfig,
@@ -70,6 +71,38 @@ export class MySQLMCPServer {
         }
       );
 
+      // スキーマツールを登録
+      server.tool(
+        "schema",
+        "Get database schema information to understand table structure, column details, and relationships between tables",
+        {
+          tableName: z
+            .string()
+            .optional()
+            .describe("Optional table name to get schema for"),
+          keyword: z
+            .string()
+            .optional()
+            .describe("Keyword to search for relevant tables/columns")
+        },
+        async (args: SchemaInput) => {
+          const result = await schemaTool(this.db, args);
+
+          // エラーの場合
+          if ("type" in result) {
+            return {
+              content: [{ type: "text", text: result.message }],
+              isError: true
+            };
+          }
+
+          // 正常な結果の場合
+          return {
+            content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
+          };
+        }
+      );
+
       // 標準入出力用トランスポートを作成
       const transport = new StdioServerTransport();
 
@@ -77,7 +110,7 @@ export class MySQLMCPServer {
       await server.connect(transport);
 
       console.info(
-        'MySQL MCP server is running. Use the "select" tool to execute SQL queries.'
+        'MySQL MCP server is running. Use the "select" tool to execute SQL queries or the "schema" tool to explore database structure.'
       );
 
       // プロセス終了時の処理
