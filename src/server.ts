@@ -5,13 +5,13 @@ import { MySQLDatabase } from "./database/mysql";
 import {
   DatabaseConfig,
   getDatabaseConfig,
-  validateDatabaseConfig,
+  validateDatabaseConfig
 } from "./utils/config.js";
 import {
   SelectInputSchema,
   SelectOutputSchema,
   selectTool,
-  SelectInput,
+  SelectInput
 } from "./tools/select.js";
 
 export class MySQLMCPServer {
@@ -47,7 +47,7 @@ export class MySQLMCPServer {
       // MCPサーバーを作成し、サーバー情報を設定
       const server = new McpServer({
         name: "MySQL-MCP",
-        version: "1.0.0",
+        version: "1.0.0"
       });
 
       // SELECTツールを登録
@@ -55,7 +55,7 @@ export class MySQLMCPServer {
         "select",
         "Execute a SELECT SQL query on the MySQL database and return the results. Only SELECT queries are allowed for security reasons.",
         {
-          query: z.string().describe("SQL SELECT query to execute"),
+          query: z.string().describe("SQL SELECT query to execute")
         },
         async (args: SelectInput) => {
           return selectTool(this.db, args);

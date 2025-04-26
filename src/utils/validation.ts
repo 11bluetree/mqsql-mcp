@@ -32,7 +32,7 @@ export function validateSelectQuery(query: string): {
     "process",
     ";",
     "into outfile",
-    "into dumpfile",
+    "into dumpfile"
   ];
 
   for (const keyword of dangerousKeywords) {
@@ -41,7 +41,7 @@ export function validateSelectQuery(query: string): {
     if (regex.test(normalizedQuery)) {
       return {
         valid: false,
-        message: `Query contains forbidden keyword: ${keyword}`,
+        message: `Query contains forbidden keyword: ${keyword}`
       };
     }
   }

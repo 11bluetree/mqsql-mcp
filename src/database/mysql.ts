@@ -3,7 +3,7 @@ import { DatabaseConfig } from "../utils/config";
 import {
   MCPError,
   createDatabaseConnectionError,
-  createQueryExecutionError,
+  createQueryExecutionError
 } from "../utils/error.js";
 
 export class MySQLDatabase {
@@ -24,7 +24,7 @@ export class MySQLDatabase {
         port: this.config.port,
         user: this.config.user,
         password: this.config.password,
-        database: this.config.database,
+        database: this.config.database
       });
 
       console.log(

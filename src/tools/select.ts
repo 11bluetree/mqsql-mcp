@@ -5,7 +5,7 @@ import { MCPError, createValidationError, logError } from "../utils/error";
 
 // SELECTツールの入力パラメータスキーマ
 export const SelectInputSchema = z.object({
-  query: z.string().describe("SQL SELECT query to execute"),
+  query: z.string().describe("SQL SELECT query to execute")
 });
 
 // SELECTツールの出力スキーマ

@@ -3,7 +3,7 @@ export enum ErrorType {
   VALIDATION_ERROR = "VALIDATION_ERROR",
   DATABASE_CONNECTION_ERROR = "DATABASE_CONNECTION_ERROR",
   QUERY_EXECUTION_ERROR = "QUERY_EXECUTION_ERROR",
-  INTERNAL_ERROR = "INTERNAL_ERROR",
+  INTERNAL_ERROR = "INTERNAL_ERROR"
 }
 
 // MCPツールのエラー形式
@@ -19,7 +19,7 @@ export interface MCPError {
 export function createValidationError(message: string): MCPError {
   return {
     type: ErrorType.VALIDATION_ERROR,
-    message,
+    message
   };
 }
 
@@ -33,7 +33,7 @@ export function createDatabaseConnectionError(
   return {
     type: ErrorType.DATABASE_CONNECTION_ERROR,
     message,
-    details,
+    details
   };
 }
 
@@ -47,7 +47,7 @@ export function createQueryExecutionError(
   return {
     type: ErrorType.QUERY_EXECUTION_ERROR,
     message,
-    details,
+    details
   };
 }
 
@@ -61,7 +61,7 @@ export function createInternalError(
   return {
     type: ErrorType.INTERNAL_ERROR,
     message,
-    details,
+    details
   };
 }
 
