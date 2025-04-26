@@ -2,8 +2,8 @@
   "name": "mysql-mcp",
   "version": "1.0.0",
   "description": "MySQL MCP server for executing SELECT queries",
-  "main": "dist/index.js",
   "type": "module",
+  "main": "dist/index.js",
   "bin": {
     "mysql-client": "dist/index.js"
   },
