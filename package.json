@@ -1,6 +1,6 @@
 {
   "name": "mysql-mcp",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "MySQL MCP server for executing SELECT queries",
   "type": "module",
   "main": "dist/index.js",
@@ -36,12 +36,7 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
-  "keywords": [
-    "mcp",
-    "mysql",
-    "database",
-    "model-context-protocol"
-  ],
+  "keywords": ["mcp", "mysql", "database", "model-context-protocol"],
   "author": "11bluetree",
   "license": "MIT"
 }
