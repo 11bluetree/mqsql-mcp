@@ -1,0 +1,6 @@
+# node
+dist/
+node_modules/
+
+# copilot
+.github/prompts/
