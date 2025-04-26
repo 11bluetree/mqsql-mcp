@@ -9,7 +9,7 @@ export const SelectInputSchema = z.object({
 });
 
 // SELECTツールの出力スキーマ
-export const SelectOutputSchema = z.array(z.record(z.any()));
+export const SelectOutputSchema = z.array(z.record(z.unknown()));
 
 // 入出力の型を定義
 export type SelectInput = z.infer<typeof SelectInputSchema>;
@@ -21,7 +21,7 @@ export type SelectOutput = z.infer<typeof SelectOutputSchema>;
 export async function selectTool(
   db: MySQLDatabase,
   input: SelectInput
-): Promise<MCPError | Record<string, any>[]> {
+): Promise<MCPError | Record<string, unknown>[]> {
   // クエリが安全なSELECTクエリであるか検証
   const validation = validateSelectQuery(input.query);
   if (!validation.valid) {
@@ -54,8 +54,8 @@ export async function selectTool(
       return [];
     }
 
-    // 結果をJSON形式で返す（Record<string, any>[]型に変換）
-    return result as Record<string, any>[];
+    // 結果をJSON形式で返す（Record<string, unknown>[]型に変換）
+    return result as Record<string, unknown>[];
   } catch (error) {
     const mcpError = createValidationError(
       `Unexpected error: ${(error as Error).message}`

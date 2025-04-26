@@ -54,7 +54,7 @@ export class MySQLMCPServer {
         },
         async (args: SelectInput) => {
           const result = await selectTool(this.db, args);
-          
+
           // エラーの場合
           if ("type" in result) {
             return {
@@ -62,7 +62,7 @@ export class MySQLMCPServer {
               isError: true
             };
           }
-          
+
           // 正常な結果の場合
           return {
             content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
