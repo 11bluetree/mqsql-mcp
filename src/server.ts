@@ -46,7 +46,7 @@ export class MySQLMCPServer {
       // MCPサーバーを作成し、サーバー情報を設定
       const server = new Server({
         name: "MySQL-MCP",
-        version: "1.0.0"
+        version: "1.1.1"
       });
 
       // 利用可能なツールの定義

@@ -1,11 +1,12 @@
 # MySQL MCP Server
 
-MySQL用のModel Context Protocol (MCP) サーバー。SELECTクエリの実行に特化しています。
+MySQL用のModel Context Protocol (MCP) サーバー。SELECTクエリの実行とデータベーススキーマの取得に対応しています。
 
 ## 特徴
 
 - TypeScriptで実装
 - MySQLへの接続とSELECTクエリの実行
+- データベースのスキーマ情報（テーブル構造、列情報、リレーションシップ）の取得
 - クエリ結果をJSON形式で返却
 - セキュリティのためSELECT文のみに制限
 - 環境変数による接続設定
@@ -34,6 +35,7 @@ MYSQL_HOST=localhost MYSQL_PORT=3306 MYSQL_USER=root MYSQL_PASSWORD=password MYS
 ## 提供ツール
 
 - `select`: SELECT SQLクエリを実行し、結果をJSON形式で返します
+- `schema`: データベースのスキーマ情報を取得し、テーブル構造、カラム情報、テーブル間の関係を返します
 
 ## セキュリティ注意事項
 
@@ -62,7 +64,7 @@ MYSQL_HOST=localhost MYSQL_PORT=3306 MYSQL_USER=root MYSQL_PASSWORD=password MYS
       "command": "npx",
       "args": [
         "-y",
-        "mysql-mcp@1.0.2"
+        "mysql-mcp@1.1.1"
       ],
       "env": {
         "MYSQL_HOST": "localhost",
@@ -93,7 +95,7 @@ MYSQL_HOST=localhost MYSQL_PORT=3306 MYSQL_USER=root MYSQL_PASSWORD=password MYS
         "command": "npx",
         "args": [
           "-y",
-          "mysql-mcp@1.0.1"
+          "mysql-mcp@1.1.1"
         ],
         "env": {
           "MYSQL_HOST": "localhost",
@@ -113,7 +115,7 @@ MYSQL_HOST=localhost MYSQL_PORT=3306 MYSQL_USER=root MYSQL_PASSWORD=password MYS
 1. VS Codeでチャットビュー（`Ctrl+Alt+I`）を開きます
 2. ドロップダウンから`Agent`モードを選択します
 3. `Tools`ボタンをクリックして利用可能なツールを確認します
-4. チャットでSQLクエリについて質問すると、`select`ツールが自動的に呼び出されます
+4. チャットでSQLクエリやデータベーススキーマについて質問すると、`select`や`schema`ツールが自動的に呼び出されます
 
 ### MCPサーバーの管理
 
