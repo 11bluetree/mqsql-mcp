@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import { MySQLMCPServer } from "./server.js";
+import { MySQLMCPServer } from "./server";
 
 // バナーを表示
-console.log(`
+console.info(`
 ┌────────────────────────────────────────┐
 │          MySQL MCP Server              │
 │                                        │

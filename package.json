@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@evilmartians/lefthook": "^1.11.11",
     "@secretlint/secretlint-rule-preset-recommend": "^9.3.1",
     "@types/node": "^20.17.31",
     "jest": "^29.7.0",

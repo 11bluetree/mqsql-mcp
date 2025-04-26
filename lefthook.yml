@@ -1,0 +1,28 @@
+# EXAMPLE USAGE:
+#
+#   Refer for explanation to following link:
+#   https://lefthook.dev/configuration/
+#
+# pre-push:
+#   jobs:
+#     - name: packages audit
+#       tags:
+#         - frontend
+#         - security
+#       run: yarn audit
+#
+#     - name: gems audit
+#       tags:
+#         - backend
+#         - security
+#       run: bundle audit
+
+pre-commit:
+  parallel: true
+  commands:
+    biome:
+      glob: "*.{js,ts,cjs,mjs,jsx,tsx}"
+      run: npx biome check --apply --no-errors-on-unmatched {staged_files} && npx biome lint --no-errors-on-unmatched {staged_files}
+    secretlint:
+      glob: "*.{js,ts,json,yml,yaml,md}"
+      run: npx secretlint {staged_files}

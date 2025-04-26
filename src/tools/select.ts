@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { MySQLDatabase } from "../database/mysql";
+import type { MySQLDatabase } from "../database/mysql";
+import { type MCPError, createValidationError, logError } from "../utils/error";
 import { validateSelectQuery } from "../utils/validation";
-import { MCPError, createValidationError, logError } from "../utils/error";
 
 // SELECTツールの入力パラメータスキーマ
 export const SelectInputSchema = z.object({
@@ -9,7 +9,7 @@ export const SelectInputSchema = z.object({
 });
 
 // SELECTツールの出力スキーマ
-export const SelectOutputSchema = z.array(z.record(z.any()));
+export const SelectOutputSchema = z.array(z.record(z.unknown()));
 
 // 入出力の型を定義
 export type SelectInput = z.infer<typeof SelectInputSchema>;
@@ -21,7 +21,7 @@ export type SelectOutput = z.infer<typeof SelectOutputSchema>;
 export async function selectTool(
   db: MySQLDatabase,
   input: SelectInput
-): Promise<SelectOutput | MCPError> {
+): Promise<MCPError | Record<string, unknown>[]> {
   // クエリが安全なSELECTクエリであるか検証
   const validation = validateSelectQuery(input.query);
   if (!validation.valid) {
@@ -49,8 +49,13 @@ export async function selectTool(
       return result;
     }
 
-    // 結果をJSON形式で返す
-    return result;
+    // 結果が配列形式でない場合（OkPacket等）は空の配列を返す
+    if (!Array.isArray(result)) {
+      return [];
+    }
+
+    // 結果をJSON形式で返す（Record<string, unknown>[]型に変換）
+    return result as Record<string, unknown>[];
   } catch (error) {
     const mcpError = createValidationError(
       `Unexpected error: ${(error as Error).message}`

@@ -28,5 +28,10 @@
     {
       "file": ".copilot/commit-message-instructions.md"
     }
+  ],
+  "github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
+    {
+      "file": ".copilot/pull-request-description-instructions.md"
+    }
   ]
 }
