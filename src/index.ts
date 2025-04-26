@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { MySQLMCPServer } from "./server";
+import { MySQLMCPServer } from "./server.js";
 
 // バナーを表示
 console.info(`

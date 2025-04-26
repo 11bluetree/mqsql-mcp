@@ -1,13 +1,13 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { MySQLDatabase } from "./database/mysql";
-import { type SelectInput, selectTool } from "./tools/select";
+import { MySQLDatabase } from "./database/mysql.js";
+import { type SelectInput, selectTool } from "./tools/select.js";
 import {
   type DatabaseConfig,
   getDatabaseConfig,
   validateDatabaseConfig
-} from "./utils/config";
+} from "./utils/config.js";
 
 export class MySQLMCPServer {
   private db: MySQLDatabase;

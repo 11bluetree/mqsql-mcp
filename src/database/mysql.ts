@@ -1,10 +1,10 @@
 import mysql from "mysql2/promise";
-import type { DatabaseConfig } from "../utils/config";
+import type { DatabaseConfig } from "../utils/config.js";
 import {
   type MCPError,
   createDatabaseConnectionError,
   createQueryExecutionError
-} from "../utils/error";
+} from "../utils/error.js";
 
 export class MySQLDatabase {
   private config: DatabaseConfig;
