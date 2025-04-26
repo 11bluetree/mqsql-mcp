@@ -4,7 +4,7 @@ import {
   type MCPError,
   createDatabaseConnectionError,
   createQueryExecutionError
-} from "../utils/error.js";
+} from "../utils/error";
 
 export class MySQLDatabase {
   private config: DatabaseConfig;

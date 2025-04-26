@@ -2,12 +2,12 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio";
 import { z } from "zod";
 import { MySQLDatabase } from "./database/mysql";
-import { type SelectInput, selectTool } from "./tools/select.js";
+import { type SelectInput, selectTool } from "./tools/select";
 import {
   type DatabaseConfig,
   getDatabaseConfig,
   validateDatabaseConfig
-} from "./utils/config.js";
+} from "./utils/config";
 
 export class MySQLMCPServer {
   private db: MySQLDatabase;
@@ -53,7 +53,20 @@ export class MySQLMCPServer {
           query: z.string().describe("SQL SELECT query to execute")
         },
         async (args: SelectInput) => {
-          return selectTool(this.db, args);
+          const result = await selectTool(this.db, args);
+          
+          // エラーの場合
+          if ("type" in result) {
+            return {
+              content: [{ type: "text", text: result.message }],
+              isError: true
+            };
+          }
+          
+          // 正常な結果の場合
+          return {
+            content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
+          };
         }
       );
 

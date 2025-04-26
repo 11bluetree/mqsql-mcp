@@ -21,7 +21,7 @@ export type SelectOutput = z.infer<typeof SelectOutputSchema>;
 export async function selectTool(
   db: MySQLDatabase,
   input: SelectInput
-): Promise<SelectOutput | MCPError> {
+): Promise<MCPError | Record<string, any>[]> {
   // クエリが安全なSELECTクエリであるか検証
   const validation = validateSelectQuery(input.query);
   if (!validation.valid) {
@@ -49,8 +49,13 @@ export async function selectTool(
       return result;
     }
 
-    // 結果をJSON形式で返す
-    return result;
+    // 結果が配列形式でない場合（OkPacket等）は空の配列を返す
+    if (!Array.isArray(result)) {
+      return [];
+    }
+
+    // 結果をJSON形式で返す（Record<string, any>[]型に変換）
+    return result as Record<string, any>[];
   } catch (error) {
     const mcpError = createValidationError(
       `Unexpected error: ${(error as Error).message}`
