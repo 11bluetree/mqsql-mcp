@@ -1,6 +1,6 @@
 {
   "name": "mysql-mcp",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "MySQL MCP server for executing SELECT queries",
   "type": "module",
   "main": "dist/index.js",
