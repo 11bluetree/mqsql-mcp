@@ -1,6 +1,9 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema
+} from "@modelcontextprotocol/sdk/types.js";
 import { MySQLDatabase } from "./database/mysql.js";
 import { type SchemaInput, schemaTool } from "./tools/schema.js";
 import { type SelectInput, selectTool } from "./tools/select.js";
@@ -41,20 +44,75 @@ export class MySQLMCPServer {
       }
 
       // MCPサーバーを作成し、サーバー情報を設定
-      const server = new McpServer({
+      const server = new Server({
         name: "MySQL-MCP",
         version: "1.0.0"
       });
 
-      // SELECTツールを登録
-      server.tool(
-        "select",
-        "Execute a SELECT SQL query on the MySQL database and return the results. Only SELECT queries are allowed for security reasons.",
+      // 利用可能なツールの定義
+      const tools = [
         {
-          query: z.string().describe("SQL SELECT query to execute")
+          name: "select",
+          description:
+            "Execute a SELECT SQL query on the MySQL database and return the results. Only SELECT queries are allowed for security reasons.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              query: {
+                type: "string",
+                description: "SQL SELECT query to execute"
+              }
+            },
+            required: ["query"]
+          },
+          annotations: {
+            title: "Execute SQL SELECT",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false
+          }
         },
-        async (args: SelectInput) => {
-          const result = await selectTool(this.db, args);
+        {
+          name: "schema",
+          description:
+            "Get database schema information to understand table structure, column details, and relationships between tables",
+          inputSchema: {
+            type: "object",
+            properties: {
+              tableName: {
+                type: "string",
+                description: "Optional table name to get schema for"
+              },
+              keyword: {
+                type: "string",
+                description: "Keyword to search for relevant tables/columns"
+              }
+            }
+          },
+          annotations: {
+            title: "Database Schema Info",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false
+          }
+        }
+      ];
+
+      // ツール一覧を返すリクエストハンドラーを設定
+      server.setRequestHandler(ListToolsRequestSchema, async () => {
+        return { tools };
+      });
+
+      // ツール実行リクエストハンドラーを設定
+      server.setRequestHandler(CallToolRequestSchema, async (request) => {
+        // リクエストからツール名と引数を取得
+        const { name, arguments: args } = request.params;
+
+        // SELECTツールの実行
+        if (name === "select") {
+          const result = await selectTool(this.db, args as SelectInput);
 
           // エラーの場合
           if ("type" in result) {
@@ -69,24 +127,10 @@ export class MySQLMCPServer {
             content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
           };
         }
-      );
 
-      // スキーマツールを登録
-      server.tool(
-        "schema",
-        "Get database schema information to understand table structure, column details, and relationships between tables",
-        {
-          tableName: z
-            .string()
-            .optional()
-            .describe("Optional table name to get schema for"),
-          keyword: z
-            .string()
-            .optional()
-            .describe("Keyword to search for relevant tables/columns")
-        },
-        async (args: SchemaInput) => {
-          const result = await schemaTool(this.db, args);
+        // スキーマツールの実行
+        if (name === "schema") {
+          const result = await schemaTool(this.db, args as SchemaInput);
 
           // エラーの場合
           if ("type" in result) {
@@ -101,7 +145,13 @@ export class MySQLMCPServer {
             content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
           };
         }
-      );
+
+        // 未知のツール名の場合
+        return {
+          isError: true,
+          content: [{ type: "text", text: `Unknown tool: ${name}` }]
+        };
+      });
 
       // 標準入出力用トランスポートを作成
       const transport = new StdioServerTransport();
