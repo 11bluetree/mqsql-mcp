@@ -1,0 +1,39 @@
+{
+  "eslint.enable": false,
+  "editor.formatOnSave": true,
+
+  "[javascript]": {
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescript]": {
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[json]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[jsonc]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "editor.codeActionsOnSave": {
+    "source.organizeImports.biome": "explicit"
+  },
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+      "file": ".copilot/commit-message-instructions.md"
+    }
+  ],
+  "github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
+    {
+      "text": "必ず日本語で簡潔に記述してください"
+    },
+    {
+      "file": ".copilot/pull-request-description-instructions.md"
+    }
+  ]
+}
