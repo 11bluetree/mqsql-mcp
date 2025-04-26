@@ -6,3 +6,10 @@ node_modules/
 
 # copilot
 .github/prompts/
+
+
+# env
+.env
+
+# mcp
+.vscode/mcp.json
