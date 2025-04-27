@@ -52,20 +52,6 @@ export function createQueryExecutionError(
 }
 
 /**
- * 内部エラーを作成
- */
-export function createInternalError(
-  message: string,
-  details?: unknown
-): MCPError {
-  return {
-    type: ErrorType.INTERNAL_ERROR,
-    message,
-    details
-  };
-}
-
-/**
  * エラーを標準エラー出力に記録
  */
 export function logError(error: MCPError): void {
