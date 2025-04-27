@@ -64,7 +64,7 @@ MYSQL_HOST=localhost MYSQL_PORT=3306 MYSQL_USER=root MYSQL_PASSWORD=password MYS
       "command": "npx",
       "args": [
         "-y",
-        "mysql-mcp@1.1.1"
+        "mysql-mcp@1.1.2"
       ],
       "env": {
         "MYSQL_HOST": "localhost",
@@ -95,7 +95,7 @@ MYSQL_HOST=localhost MYSQL_PORT=3306 MYSQL_USER=root MYSQL_PASSWORD=password MYS
         "command": "npx",
         "args": [
           "-y",
-          "mysql-mcp@1.1.1"
+          "mysql-mcp@1.1.2"
         ],
         "env": {
           "MYSQL_HOST": "localhost",
