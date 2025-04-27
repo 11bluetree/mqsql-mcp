@@ -30,7 +30,6 @@ function createMockDatabase(): jest.Mocked<MySQLDatabase> {
   } as unknown as jest.Mocked<MySQLDatabase>;
 }
 
-// モック用の型定義
 interface MockValidation {
   validateSelectQuery: jest.Mock;
 }
@@ -41,30 +40,25 @@ interface MockError {
   createValidationError: jest.Mock;
 }
 
-// モックの設定
 jest.mock("../../utils/validation.js", () => ({
   validateSelectQuery: jest.fn()
 }));
 
-// エラーモジュールのモック
 const mockErrorType = ErrorType;
-jest.mock("../../utils/error.js", () => {
-  return {
-    ErrorType: {
-      VALIDATION_ERROR: "VALIDATION_ERROR",
-      DATABASE_CONNECTION_ERROR: "DATABASE_CONNECTION_ERROR",
-      QUERY_EXECUTION_ERROR: "QUERY_EXECUTION_ERROR",
-      INTERNAL_ERROR: "INTERNAL_ERROR"
-    },
-    logError: jest.fn(),
-    createValidationError: jest.fn((message) => ({
-      type: "VALIDATION_ERROR",
-      message
-    }))
-  };
-});
+jest.mock("../../utils/error.js", () => ({
+  ErrorType: {
+    VALIDATION_ERROR: "VALIDATION_ERROR",
+    DATABASE_CONNECTION_ERROR: "DATABASE_CONNECTION_ERROR",
+    QUERY_EXECUTION_ERROR: "QUERY_EXECUTION_ERROR",
+    INTERNAL_ERROR: "INTERNAL_ERROR"
+  },
+  logError: jest.fn(),
+  createValidationError: jest.fn((message) => ({
+    type: "VALIDATION_ERROR",
+    message
+  }))
+}));
 
-// モックを取得して型アノテーションを追加
 const mockValidation = jest.requireMock(
   "../../utils/validation.js"
 ) as MockValidation;
@@ -72,6 +66,7 @@ const mockError = jest.requireMock("../../utils/error.js") as MockError;
 
 describe("selectTool", () => {
   let mockDb: jest.Mocked<MySQLDatabase>;
+  const defaultQuery = "SELECT * FROM users";
 
   beforeEach(() => {
     mockDb = createMockDatabase();
@@ -80,7 +75,6 @@ describe("selectTool", () => {
   });
 
   test("正常なSELECTクエリが実行され結果が返される", async () => {
-    // 準備
     const mockData = [
       { id: 1, name: "Test User 1" },
       { id: 2, name: "Test User 2" }
@@ -88,12 +82,10 @@ describe("selectTool", () => {
     mockDb.executeQuery.mockResolvedValueOnce(
       mockData as unknown as QueryResult
     );
-    const input: SelectInput = { query: "SELECT * FROM users" };
+    const input: SelectInput = { query: defaultQuery };
 
-    // 実行
     const result = await selectTool(mockDb, input);
 
-    // 検証
     expect(mockValidation.validateSelectQuery).toHaveBeenCalledWith(
       input.query
     );
@@ -103,14 +95,11 @@ describe("selectTool", () => {
   });
 
   test("データベース接続がない場合はエラーを返す", async () => {
-    // 準備
     mockDb.isConnected.mockReturnValueOnce(false);
-    const input: SelectInput = { query: "SELECT * FROM users" };
+    const input: SelectInput = { query: defaultQuery };
 
-    // 実行
     const result = await selectTool(mockDb, input);
 
-    // 検証
     expect(mockDb.isConnected).toHaveBeenCalled();
     expect(mockDb.executeQuery).not.toHaveBeenCalled();
     expect(result).toEqual(
@@ -123,17 +112,15 @@ describe("selectTool", () => {
   });
 
   test("無効なクエリの場合はバリデーションエラーを返す", async () => {
-    // 準備
+    const errorMessage = "Only SELECT queries are allowed";
     mockValidation.validateSelectQuery.mockReturnValueOnce({
       valid: false,
-      message: "Only SELECT queries are allowed"
+      message: errorMessage
     });
     const input: SelectInput = { query: "DELETE FROM users" };
 
-    // 実行
     const result = await selectTool(mockDb, input);
 
-    // 検証
     expect(mockValidation.validateSelectQuery).toHaveBeenCalledWith(
       input.query
     );
@@ -141,14 +128,13 @@ describe("selectTool", () => {
     expect(result).toEqual(
       expect.objectContaining({
         type: mockErrorType.VALIDATION_ERROR,
-        message: "Only SELECT queries are allowed"
+        message: errorMessage
       })
     );
     expect(mockError.logError).toHaveBeenCalled();
   });
 
   test("データベースがエラーを返した場合はそのエラーを返す", async () => {
-    // 準備
     const dbError: MCPError = {
       type: mockErrorType.QUERY_EXECUTION_ERROR,
       message: "テーブルが存在しません"
@@ -156,41 +142,33 @@ describe("selectTool", () => {
     mockDb.executeQuery.mockResolvedValueOnce(dbError);
     const input: SelectInput = { query: "SELECT * FROM nonexistent_table" };
 
-    // 実行
     const result = await selectTool(mockDb, input);
 
-    // 検証
     expect(mockDb.executeQuery).toHaveBeenCalledWith(input.query);
     expect(result).toEqual(dbError);
     expect(mockError.logError).toHaveBeenCalled();
   });
 
   test("データベースが配列でない結果を返した場合は空配列を返す", async () => {
-    // 準備
     const nonArrayResult = { affectedRows: 0 } as OkPacket;
     mockDb.executeQuery.mockResolvedValueOnce(
       nonArrayResult as unknown as QueryResult
     );
-    const input: SelectInput = { query: "SELECT * FROM users" };
+    const input: SelectInput = { query: defaultQuery };
 
-    // 実行
     const result = await selectTool(mockDb, input);
 
-    // 検証
     expect(mockDb.executeQuery).toHaveBeenCalledWith(input.query);
     expect(result).toEqual([]);
   });
 
   test("予期しない例外が発生した場合はバリデーションエラーを返す", async () => {
-    // 準備
     const unexpectedError = new Error("予期しないエラー");
     mockDb.executeQuery.mockRejectedValueOnce(unexpectedError);
-    const input: SelectInput = { query: "SELECT * FROM users" };
+    const input: SelectInput = { query: defaultQuery };
 
-    // 実行
     const result = await selectTool(mockDb, input);
 
-    // 検証
     expect(mockDb.executeQuery).toHaveBeenCalledWith(input.query);
     expect(result).toEqual(
       expect.objectContaining({
