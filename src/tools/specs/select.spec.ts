@@ -1,9 +1,19 @@
-import { beforeEach, describe, expect, jest, test } from "@jest/globals";
+import {
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  jest,
+  test
+} from "@jest/globals";
 import type { QueryResult, RowDataPacket } from "mysql2/promise";
 import type { MySQLDatabase } from "../../database/mysql.js";
 import type { DatabaseConfig } from "../../utils/config.js";
 import type { MCPError } from "../../utils/error.js";
 import { ErrorType } from "../../utils/error.js";
+import * as ErrorModule from "../../utils/error.js";
+import { validateSelectQuery } from "../../utils/validation.js";
+import * as ValidationModule from "../../utils/validation.js";
 import { type SelectInput, selectTool } from "../select.js";
 
 function createMockDatabase(): jest.Mocked<MySQLDatabase> {
@@ -30,20 +40,6 @@ function createMockDatabase(): jest.Mocked<MySQLDatabase> {
   } as unknown as jest.Mocked<MySQLDatabase>;
 }
 
-interface MockValidation {
-  validateSelectQuery: jest.Mock;
-}
-
-interface MockError {
-  ErrorType: typeof ErrorType;
-  logError: jest.Mock;
-  createValidationError: jest.Mock;
-}
-
-jest.mock("../../utils/validation.js", () => ({
-  validateSelectQuery: jest.fn()
-}));
-
 const mockErrorType = ErrorType;
 jest.mock("../../utils/error.js", () => ({
   ErrorType: {
@@ -59,19 +55,19 @@ jest.mock("../../utils/error.js", () => ({
   }))
 }));
 
-const mockValidation = jest.requireMock(
-  "../../utils/validation.js"
-) as MockValidation;
-const mockError = jest.requireMock("../../utils/error.js") as MockError;
-
 describe("selectTool", () => {
   let mockDb: jest.Mocked<MySQLDatabase>;
   const defaultQuery = "SELECT * FROM users";
 
+  beforeAll(() => {
+    jest.spyOn(ValidationModule, "validateSelectQuery");
+
+    jest.spyOn(ErrorModule, "logError");
+  });
+
   beforeEach(() => {
     mockDb = createMockDatabase();
     jest.clearAllMocks();
-    mockValidation.validateSelectQuery.mockReturnValue({ valid: true });
   });
 
   test("正常なSELECTクエリは実行できる", async () => {
@@ -86,9 +82,7 @@ describe("selectTool", () => {
 
     const result = await selectTool(mockDb, input);
 
-    expect(mockValidation.validateSelectQuery).toHaveBeenCalledWith(
-      input.query
-    );
+    expect(validateSelectQuery).toHaveBeenCalledWith(input.query);
     expect(mockDb.isConnected).toHaveBeenCalled();
     expect(mockDb.executeQuery).toHaveBeenCalledWith(input.query);
     expect(result).toEqual(mockData);
@@ -108,22 +102,16 @@ describe("selectTool", () => {
         message: "Database is not connected"
       })
     );
-    expect(mockError.logError).toHaveBeenCalled();
+    expect(ErrorModule.logError).toHaveBeenCalled();
   });
 
   test("無効なクエリは実行できない", async () => {
     const errorMessage = "Only SELECT queries are allowed";
-    mockValidation.validateSelectQuery.mockReturnValueOnce({
-      valid: false,
-      message: errorMessage
-    });
     const input: SelectInput = { query: "DELETE FROM users" };
 
     const result = await selectTool(mockDb, input);
 
-    expect(mockValidation.validateSelectQuery).toHaveBeenCalledWith(
-      input.query
-    );
+    expect(validateSelectQuery).toHaveBeenCalledWith(input.query);
     expect(mockDb.executeQuery).not.toHaveBeenCalled();
     expect(result).toEqual(
       expect.objectContaining({
@@ -131,22 +119,16 @@ describe("selectTool", () => {
         message: errorMessage
       })
     );
-    expect(mockError.logError).toHaveBeenCalled();
+    expect(ErrorModule.logError).toHaveBeenCalled();
   });
 
   test("SLEEP関数を含むクエリは実行できない", async () => {
     const errorMessage = "Query contains dangerous function: sleep";
-    mockValidation.validateSelectQuery.mockReturnValueOnce({
-      valid: false,
-      message: errorMessage
-    });
     const input: SelectInput = { query: "SELECT SLEEP(5), id FROM users" };
 
     const result = await selectTool(mockDb, input);
 
-    expect(mockValidation.validateSelectQuery).toHaveBeenCalledWith(
-      input.query
-    );
+    expect(validateSelectQuery).toHaveBeenCalledWith(input.query);
     expect(mockDb.executeQuery).not.toHaveBeenCalled();
     expect(result).toEqual(
       expect.objectContaining({
@@ -154,22 +136,16 @@ describe("selectTool", () => {
         message: errorMessage
       })
     );
-    expect(mockError.logError).toHaveBeenCalled();
+    expect(ErrorModule.logError).toHaveBeenCalled();
   });
 
   test("LOAD_FILE関数を含むクエリは実行できない", async () => {
     const errorMessage = "Query contains dangerous function: load_file";
-    mockValidation.validateSelectQuery.mockReturnValueOnce({
-      valid: false,
-      message: errorMessage
-    });
     const input: SelectInput = { query: "SELECT LOAD_FILE('/etc/passwd')" };
 
     const result = await selectTool(mockDb, input);
 
-    expect(mockValidation.validateSelectQuery).toHaveBeenCalledWith(
-      input.query
-    );
+    expect(validateSelectQuery).toHaveBeenCalledWith(input.query);
     expect(mockDb.executeQuery).not.toHaveBeenCalled();
     expect(result).toEqual(
       expect.objectContaining({
@@ -177,7 +153,7 @@ describe("selectTool", () => {
         message: errorMessage
       })
     );
-    expect(mockError.logError).toHaveBeenCalled();
+    expect(ErrorModule.logError).toHaveBeenCalled();
   });
 
   test("存在しないテーブルに対するクエリは実行できない", async () => {
@@ -192,7 +168,7 @@ describe("selectTool", () => {
 
     expect(mockDb.executeQuery).toHaveBeenCalledWith(input.query);
     expect(result).toEqual(dbError);
-    expect(mockError.logError).toHaveBeenCalled();
+    expect(ErrorModule.logError).toHaveBeenCalled();
   });
 
   test("予期しない例外が発生した場合は実行できない", async () => {
@@ -209,6 +185,6 @@ describe("selectTool", () => {
         message: `Unexpected error: ${unexpectedError.message}`
       })
     );
-    expect(mockError.logError).toHaveBeenCalled();
+    expect(ErrorModule.logError).toHaveBeenCalled();
   });
 });
