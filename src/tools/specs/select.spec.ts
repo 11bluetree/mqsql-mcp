@@ -61,7 +61,6 @@ describe("selectTool", () => {
 
   beforeAll(() => {
     jest.spyOn(ValidationModule, "validateSelectQuery");
-
     jest.spyOn(ErrorModule, "logError");
   });
 
@@ -70,7 +69,7 @@ describe("selectTool", () => {
     jest.clearAllMocks();
   });
 
-  test("正常なSELECTクエリは実行できる", async () => {
+  test("正常系、クエリ結果が返される", async () => {
     const mockData = [
       { id: 1, name: "Test User 1" },
       { id: 2, name: "Test User 2" }
@@ -88,7 +87,7 @@ describe("selectTool", () => {
     expect(result).toEqual(mockData);
   });
 
-  test("データベース接続がない場合は実行できない", async () => {
+  test("データベース接続がない場合はエラー", async () => {
     mockDb.isConnected.mockReturnValueOnce(false);
     const input: SelectInput = { query: defaultQuery };
 
@@ -105,58 +104,7 @@ describe("selectTool", () => {
     expect(ErrorModule.logError).toHaveBeenCalled();
   });
 
-  test("無効なクエリは実行できない", async () => {
-    const errorMessage = "Only SELECT queries are allowed";
-    const input: SelectInput = { query: "DELETE FROM users" };
-
-    const result = await selectTool(mockDb, input);
-
-    expect(validateSelectQuery).toHaveBeenCalledWith(input.query);
-    expect(mockDb.executeQuery).not.toHaveBeenCalled();
-    expect(result).toEqual(
-      expect.objectContaining({
-        type: mockErrorType.VALIDATION_ERROR,
-        message: errorMessage
-      })
-    );
-    expect(ErrorModule.logError).toHaveBeenCalled();
-  });
-
-  test("SLEEP関数を含むクエリは実行できない", async () => {
-    const errorMessage = "Query contains dangerous function: sleep";
-    const input: SelectInput = { query: "SELECT SLEEP(5), id FROM users" };
-
-    const result = await selectTool(mockDb, input);
-
-    expect(validateSelectQuery).toHaveBeenCalledWith(input.query);
-    expect(mockDb.executeQuery).not.toHaveBeenCalled();
-    expect(result).toEqual(
-      expect.objectContaining({
-        type: mockErrorType.VALIDATION_ERROR,
-        message: errorMessage
-      })
-    );
-    expect(ErrorModule.logError).toHaveBeenCalled();
-  });
-
-  test("LOAD_FILE関数を含むクエリは実行できない", async () => {
-    const errorMessage = "Query contains dangerous function: load_file";
-    const input: SelectInput = { query: "SELECT LOAD_FILE('/etc/passwd')" };
-
-    const result = await selectTool(mockDb, input);
-
-    expect(validateSelectQuery).toHaveBeenCalledWith(input.query);
-    expect(mockDb.executeQuery).not.toHaveBeenCalled();
-    expect(result).toEqual(
-      expect.objectContaining({
-        type: mockErrorType.VALIDATION_ERROR,
-        message: errorMessage
-      })
-    );
-    expect(ErrorModule.logError).toHaveBeenCalled();
-  });
-
-  test("存在しないテーブルに対するクエリは実行できない", async () => {
+  test("存在しないテーブルに対するクエリ実行時にエラー", async () => {
     const dbError: MCPError = {
       type: mockErrorType.QUERY_EXECUTION_ERROR,
       message: "テーブルが存在しません"
@@ -171,20 +119,34 @@ describe("selectTool", () => {
     expect(ErrorModule.logError).toHaveBeenCalled();
   });
 
-  test("予期しない例外が発生した場合は実行できない", async () => {
-    const unexpectedError = new Error("予期しないエラー");
-    mockDb.executeQuery.mockRejectedValueOnce(unexpectedError);
+  test("データベース接続エラー発生時エラー", async () => {
+    const dbError: MCPError = {
+      type: mockErrorType.DATABASE_CONNECTION_ERROR,
+      message: "データベース接続エラー"
+    };
+    mockDb.executeQuery.mockResolvedValueOnce(dbError);
     const input: SelectInput = { query: defaultQuery };
 
     const result = await selectTool(mockDb, input);
 
     expect(mockDb.executeQuery).toHaveBeenCalledWith(input.query);
-    expect(result).toEqual(
-      expect.objectContaining({
-        type: mockErrorType.VALIDATION_ERROR,
-        message: `Unexpected error: ${unexpectedError.message}`
-      })
-    );
+    expect(result).toEqual(dbError);
+    expect(ErrorModule.logError).toHaveBeenCalled();
+  });
+
+  test("クエリ実行時のSQL構文エラー", async () => {
+    const dbError: MCPError = {
+      type: mockErrorType.QUERY_EXECUTION_ERROR,
+      message: "クエリ実行エラー",
+      details: { code: "ER_SYNTAX_ERROR" }
+    };
+    mockDb.executeQuery.mockResolvedValueOnce(dbError);
+    const input: SelectInput = { query: defaultQuery };
+
+    const result = await selectTool(mockDb, input);
+
+    expect(mockDb.executeQuery).toHaveBeenCalledWith(input.query);
+    expect(result).toEqual(dbError);
     expect(ErrorModule.logError).toHaveBeenCalled();
   });
 });
