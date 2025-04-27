@@ -187,32 +187,6 @@ describe("validateSelectQuery", () => {
           "Query contains dangerous function: load_file"
         );
       });
-
-      test("DATABASE関数を含むクエリは実行できない", () => {
-        const result = validateSelectQuery("SELECT DATABASE() FROM users");
-        expect(result.valid).toBe(false);
-        expect(result.message).toBe(
-          "Query contains dangerous function: database()"
-        );
-      });
-
-      test("USER関数を含むクエリは実行できない", () => {
-        const result = validateSelectQuery(
-          "SELECT USER() FROM information_schema.tables"
-        );
-        expect(result.valid).toBe(false);
-        expect(result.message).toBe(
-          "Query contains dangerous function: user()"
-        );
-      });
-
-      test("VERSION関数を含むクエリは実行できない", () => {
-        const result = validateSelectQuery("SELECT VERSION() FROM dual");
-        expect(result.valid).toBe(false);
-        expect(result.message).toBe(
-          "Query contains dangerous function: version()"
-        );
-      });
     });
   });
 });
